@@ -8,7 +8,8 @@ import ListOfOrder from './ListOfOrder';
 
 const Home = () => {
     
-    const [ products, setProducts ] = useState();
+    const [ products, setProducts ] = useState(null);
+    const [ productsFilter, setProductsFilter ] = useState(null);
     const [ productsSelected, setProductsSelected] = useState([]);
     const [ priceTotal, setPriceTotal ] = useState(0);
     const [ orderData, setOrderData ] = useState({
@@ -30,7 +31,6 @@ const Home = () => {
     // Añdir una nueva orden:
     const addingOrder = () => {
         const userId = localStorage.getItem('userId');
-        // const time =  new Date().toDateString() + ' ' + new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds();
         const time = new Date().toLocaleString();
         const convertingToObject = productsSelected.map(obj => {
                 const newObjt= {
@@ -62,9 +62,10 @@ const Home = () => {
         .then(res => res.json())
         .then(response => {
             console.log(response)
-            return response
+            window.location.reload()
         })
         .catch(error => error)
+
         return peticionPost();
     }
 
@@ -81,6 +82,7 @@ const Home = () => {
             setProductsSelected(updateQty)
         }
     }
+
     // Dismunyendo productos del carrito de orden
     const reduceProductSelected = (event, product) => {
         event.preventDefault();
@@ -116,69 +118,72 @@ const Home = () => {
             }
             })
         .then(response => response.json()) 
-        .then(json => setProducts(json))
+        .then(json => {
+            setProducts(json)
+            setProductsFilter(json)
+        })
         .catch(err => console.log(err));
     }
 
     useEffect(()=>{
         getProducts();
-        
     }, [])
-
     
+    // FILTROS DE PRODUCTOS
+    const filterAllProducts = (e) => {
+        e.preventDefault()
+        setProductsFilter(products)
+    }
+    const filterBreakfast = (e) => {
+        e.preventDefault()
+        const array = products.filter((product)=> product.type==='Desayuno');
+        // setProducts(false)
+        setProductsFilter(array)
+    }
+    console.log('aqui', )
+    const filterLunches = (e) => {
+        e.preventDefault()
+        const array = products.filter((product)=> product.type==='Almuerzo');
+        setProductsFilter(array)
+    }
+    console.log('aqui lunhc', )
     return(
         <div className='Home'>
             <section className="section__chooseMenu">
                 <div className='div__buttons'>
                     <div>
-                        <button>
+                        <button onClick={(e) => filterAllProducts(e)}>
                             <p>All products</p>  
                             <img src={allproducts} className='img-menu-all' alt='Cup of cofee'/>
                         </button>
                     </div>
                     <div>
-                        <button>
+                        <button onClick={(e) => filterBreakfast(e)}>
                             <p>Breakfasts</p>  
                             <img src={CupOfCofee} className='img-menu' alt='Cup of cofee'/>
                         </button>
                     </div>
                     <div >
-                        <button>
+                        <button onClick={(e) => filterLunches(e)}>
                             <p>Lunches</p> 
                             <img src={burger} className='img-menu' alt='burger-lunch'/>
                         </button>
                         
                     </div>
-                </div>
-                           
+                </div>         
                 <div className="products">
-                    {/* <div className="choose-by-type">
-                        <div>
-                            <img src={burgerToSelect} alt='burger'></img>
-                            Burgers
-                            <i className="fa-solid fa-circle-play iconHomeView"></i>
-                        </div>
-                        <div>
-                        <img src={burgerToSelect} alt='burger'></img>
-                            Extra
-                            <i className="fa-solid fa-circle-play iconHomeView"></i>
-                        </div>
-                        <div>
-                        <img src={burgerToSelect} alt='burger'></img>
-                            Drinks
-                            <i className="fa-solid fa-circle-play iconHomeView"></i>
-                        </div>
-                    </div>  */}
                     <div className="list-of-Products">
                         <div>
-                        {!products ? 'Cargando...' : 
-                        products.map((product) => {
+                        
+                        {productsFilter ? 
+                         productsFilter.map((product) => {
                             return  <ProductCard 
                                 key={product.id}
                                 product={product}
                                 addProductsSelected={addProductsSelected}                                
                                 /> 
-                                })}
+                            }) : 'Loading'}
+                            
                         </div>
                     </div>
                 </div>
